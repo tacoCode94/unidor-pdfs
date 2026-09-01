@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Unir PDFs Fácilmente</title>
-    <!-- Cargamos PDF-lib desde un CDN -->
-    <script src="https://unpkg.com"></script>
+    <title>Unir PDFs Fácilmente - Servidor Estable</title>
+    
+    <!-- CDN Oficial y estable de la librería -->
+    <script src="https://cloudflare.com"></script>
+
     <style>
         body { 
             font-family: Arial, sans-serif; 
@@ -59,21 +61,20 @@
 
     <div class="container">
         <h1>Unir Archivos PDF</h1>
-        <p>Selecciona tus archivos PDF en el orden que deseas unirlos:</p>
+        <p>Selecciona tus archivos PDF (mantén presionado Ctrl o Cmd para elegir varios):</p>
         
         <input type="file" id="archivosPdf" accept="application/pdf" multiple>
         <br>
-        <button onclick="unirPdfs()">Combinar y Descargar</button>
+        <button onclick="unirPdfsServidor()">Combinar y Descargar PDF</button>
         
         <div id="mensaje"></div>
     </div>
 
     <script>
-        async function unirPdfs() {
+        async function unirPdfsServidor() {
             const inputFiles = document.getElementById('archivosPdf');
             const mensaje = document.getElementById('mensaje');
 
-            // 1. Validación inicial de cantidad de archivos
             if (inputFiles.files.length < 2) {
                 mensaje.style.color = 'red';
                 mensaje.textContent = 'Por favor selecciona al menos 2 archivos PDF.';
@@ -81,51 +82,52 @@
             }
 
             mensaje.style.color = '#333';
-            mensaje.textContent = 'Procesando archivos localmente...';
+            mensaje.textContent = 'Procesando y uniendo archivos...';
+
+            // DETECCIÓN TOTALMENTE FLEXIBLE: Buscamos el motor en todas sus variaciones posibles
+            const motorPDF = window.PDFLib || window.pdfLib || (typeof PDFLib !== 'undefined' ? PDFLib : null) || (typeof pdfLib !== 'undefined' ? pdfLib : null);
+
+            if (!motorPDF) {
+                mensaje.style.color = 'red';
+                mensaje.textContent = 'Error crítico: No se pudo enlazar la librería PDF-lib en este navegador. Intenta recargar la página.';
+                return;
+            }
 
             try {
-                // 2. Acceso a los componentes de la biblioteca
-                const { PDFDocument } = PDFLib;
+                const { PDFDocument } = motorPDF;
                 const pdfDocMerged = await PDFDocument.create();
 
-                // 3. Procesar secuencialmente cada archivo seleccionado
                 for (let i = 0; i < inputFiles.files.length; i++) {
                     const file = inputFiles.files[i];
                     const arrayBuffer = await file.arrayBuffer();
                     
                     let pdfDoc;
                     try {
-                        // Carga segura del documento
                         pdfDoc = await PDFDocument.load(arrayBuffer);
                     } catch (loadError) {
-                        // Captura si el PDF individual tiene problemas o contraseña
                         throw new Error(`El archivo "${file.name}" está encriptado, protegido o dañado.`);
                     }
 
-                    // Generar array de índices compatible con cualquier navegador
                     const count = pdfDoc.getPageCount();
                     const pageIndices = Array.from({ length: count }, (_, index) => index);
 
-                    // Copiar e insertar las páginas en el documento final
                     const pages = await pdfDocMerged.copyPages(pdfDoc, pageIndices);
                     pages.forEach((page) => pdfDocMerged.addPage(page));
                 }
 
-                // 4. Compilar el archivo final y forzar la descarga
                 const mergedPdfBytes = await pdfDocMerged.save();
                 
                 const blob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
-                link.download = 'documento-unido.pdf';
+                link.download = 'documento_unido.pdf';
                 link.click();
 
                 mensaje.style.color = 'green';
                 mensaje.textContent = '¡PDFs unidos y descargados con éxito!';
             } catch (error) {
-                console.error("Detalle técnico del error:", error);
+                console.error("Detalle del error:", error);
                 mensaje.style.color = 'red';
-                // El navegador mostrará si falló por estructura o por archivo protegido
                 mensaje.textContent = 'Error: ' + error.message;
             }
         }
@@ -133,6 +135,7 @@
 
 </body>
 </html>
+
 
 
 </body>

@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Unir PDFs Fácilmente - Versión Final Unificada</title>
+    <title>Unir PDFs Fácilmente - Versión Corporativa</title>
     
-    <!-- ENLACE DE PRODUCCIÓN: Carga la librería directamente desde el servidor oficial de jsDelivr -->
-    <script src="https://jsdelivr.net" crossorigin="anonymous"></script>
+    <!-- LLAMADA INTERNA SEGURO: Buscamos el archivo en nuestro propio servidor de GitHub -->
+    <script src="pdf-lib.min.js"></script>
 
     <style>
         body { 
@@ -65,13 +65,13 @@
         
         <input type="file" id="archivosPdf" accept="application/pdf" multiple>
         <br>
-        <button onclick="unirPdfsFinal()">Combinar y Descargar PDF</button>
+        <button onclick="unirPdfsDefinitivo()">Combinar y Descargar PDF</button>
         
         <div id="mensaje"></div>
     </div>
 
     <script>
-        async function unirPdfsFinal() {
+        async function unirPdfsDefinitivo() {
             const inputFiles = document.getElementById('archivosPdf');
             const mensaje = document.getElementById('mensaje');
 
@@ -84,12 +84,12 @@
             mensaje.style.color = '#333';
             mensaje.textContent = 'Procesando y uniendo archivos...';
 
-            // Buscamos el motor en la memoria global de forma segura
+            // Al estar en el mismo servidor, window.pdfLib siempre estará presente
             const motorPDF = window.PDFLib || window.pdfLib;
 
             if (!motorPDF) {
                 mensaje.style.color = 'red';
-                mensaje.textContent = 'Error crítico: La librería externa no se pudo enlazar. Verifica tu conexión a internet o recarga la página.';
+                mensaje.textContent = 'Error: No se encuentra el archivo "pdf-lib.min.js" en la misma carpeta del servidor.';
                 return;
             }
 
@@ -105,7 +105,7 @@
                     try {
                         pdfDoc = await PDFDocument.load(arrayBuffer);
                     } catch (loadError) {
-                        throw new Error(`El archivo "${file.name}" está protegido o dañado.`);
+                        throw new Error(`El archivo "${file.name}" está encriptado o dañado.`);
                     }
 
                     const count = pdfDoc.getPageCount();
@@ -135,6 +135,7 @@
 
 </body>
 </html>
+
 
 
 </body>

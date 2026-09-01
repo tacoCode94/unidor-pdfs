@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Unir PDFs Fácilmente - Versión Corporativa</title>
-
-    <!-- LLAMADA INTERNA SEGURO: Buscamos el archivo en nuestro propio servidor de GitHub -->
-    <script src="pdf-lib.min.js"></script>
+    <title>Unir PDFs Fácilmente - Versión Final Unificada</title>
+    
+    <!-- ENLACE DE PRODUCCIÓN: Carga la librería directamente desde el servidor oficial de jsDelivr -->
+    <script src="https://jsdelivr.net" crossorigin="anonymous"></script>
 
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 40px auto;
-            padding: 20px;
-            text-align: center;
-            background: #f4f4f9;
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 600px; 
+            margin: 40px auto; 
+            padding: 20px; 
+            text-align: center; 
+            background: #f4f4f9; 
         }
         .container {
             background: #fff;
@@ -23,34 +23,34 @@
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
-        input[type="file"] {
-            margin: 20px 0;
-            padding: 10px;
-            background: #fafafa;
-            border: 1px dashed #ccc;
-            width: 100%;
-            box-sizing: border-box;
+        input[type="file"] { 
+            margin: 20px 0; 
+            padding: 10px; 
+            background: #fafafa; 
+            border: 1px dashed #ccc; 
+            width: 100%; 
+            box-sizing: border-box; 
             cursor: pointer;
         }
-        button {
-            background: #4CAF50;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            border-radius: 5px;
-            width: 100%;
+        button { 
+            background: #4CAF50; 
+            color: white; 
+            border: none; 
+            padding: 12px 20px; 
+            font-size: 16px; 
+            cursor: pointer; 
+            border-radius: 5px; 
+            width: 100%; 
             font-weight: bold;
             transition: background 0.3s;
         }
-        button:hover {
-            background: #45a049;
+        button:hover { 
+            background: #45a049; 
         }
-        #mensaje {
-            margin-top: 20px;
-            font-weight: bold;
-            color: #333;
+        #mensaje { 
+            margin-top: 20px; 
+            font-weight: bold; 
+            color: #333; 
             padding: 10px;
             border-radius: 4px;
             word-wrap: break-word;
@@ -62,16 +62,16 @@
     <div class="container">
         <h1>Unir Archivos PDF</h1>
         <p>Selecciona tus archivos PDF (mantén presionado Ctrl o Cmd para elegir varios):</p>
-
+        
         <input type="file" id="archivosPdf" accept="application/pdf" multiple>
         <br>
-        <button onclick="unirPdfsDefinitivo()">Combinar y Descargar PDF</button>
-
+        <button onclick="unirPdfsFinal()">Combinar y Descargar PDF</button>
+        
         <div id="mensaje"></div>
     </div>
 
     <script>
-        async function unirPdfsDefinitivo() {
+        async function unirPdfsFinal() {
             const inputFiles = document.getElementById('archivosPdf');
             const mensaje = document.getElementById('mensaje');
 
@@ -84,12 +84,12 @@
             mensaje.style.color = '#333';
             mensaje.textContent = 'Procesando y uniendo archivos...';
 
-            // Al estar en el mismo servidor, window.pdfLib siempre estará presente
+            // Buscamos el motor en la memoria global de forma segura
             const motorPDF = window.PDFLib || window.pdfLib;
 
             if (!motorPDF) {
                 mensaje.style.color = 'red';
-                mensaje.textContent = 'Error: No se encuentra el archivo "pdf-lib.min.js" en la misma carpeta del servidor.';
+                mensaje.textContent = 'Error crítico: La librería externa no se pudo enlazar. Verifica tu conexión a internet o recarga la página.';
                 return;
             }
 
@@ -100,12 +100,12 @@
                 for (let i = 0; i < inputFiles.files.length; i++) {
                     const file = inputFiles.files[i];
                     const arrayBuffer = await file.arrayBuffer();
-
+                    
                     let pdfDoc;
                     try {
                         pdfDoc = await PDFDocument.load(arrayBuffer);
                     } catch (loadError) {
-                        throw new Error(`El archivo "${file.name}" está encriptado o dañado.`);
+                        throw new Error(`El archivo "${file.name}" está protegido o dañado.`);
                     }
 
                     const count = pdfDoc.getPageCount();
@@ -116,7 +116,7 @@
                 }
 
                 const mergedPdfBytes = await pdfDocMerged.save();
-
+                
                 const blob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
@@ -132,6 +132,10 @@
             }
         }
     </script>
+
+</body>
+</html>
+
 
 </body>
 </html>

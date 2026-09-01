@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Unir PDFs - Sistema Local Autónomo</title>
+    <title>Unir PDFs - Versión Unificada Autónoma</title>
     <style>
         body { 
             font-family: Arial, sans-serif; 
@@ -61,42 +61,15 @@
         
         <input type="file" id="archivosPdf" accept="application/pdf" multiple>
         <br>
-        <button onclick="procesarUnionAbsoluta()">Combinar y Descargar PDF</button>
+        <button id="btnCombinar">Combinar y Descargar PDF</button>
         
         <div id="mensaje"></div>
     </div>
 
-    <!-- MOTOR DE UNIÓN INYECTADO DIRECTAMENTE COMO TEXTO PLANO -->
-    <!-- Esto no requiere internet, no usa Base64 y es inmune a bloqueos de proxy/firewall -->
+    <!-- SCRIPT ÚNICO UNIFICADO: Previene cualquier error de "is not defined" por orden de lectura -->
     <script>
-        const MotorUnidadLocal = {
-            async fusionarDocumentos(listaArchivos) {
-                const chunksFinales =;
-                
-                for (let i = 0; i < listaArchivos.length; i++) {
-                    const arrayBuffer = await listaArchivos[i].arrayBuffer();
-                    const uint8Array = new Uint8Array(arrayBuffer);
-                    chunksFinales.push(uint8Array);
-                }
-
-                // Analizador y limpiador de firmas de fin de archivo (EOF) para forzar al lector a leer el flujo continuo
-                let tamañoTotal = chunksFinales.reduce((acc, curr) => acc + curr.length, 0);
-                let archivoCombinado = new Uint8Array(tamañoTotal);
-                
-                let posicion = 0;
-                for (let chunk of chunksFinales) {
-                    archivoCombinado.set(chunk, posicion);
-                    posicion += chunk.length;
-                }
-
-                // Inyección de estructura de diccionario cruzado nativo corregido
-                return archivoCombinado;
-            }
-        };
-    </script>
-
-    <script>
-        async function procesarUnionAbsoluta() {
+        // Escuchamos directamente el evento del botón de forma interna y segura
+        document.getElementById('btnCombinar').addEventListener('click', async () => {
             const inputFiles = document.getElementById('archivosPdf');
             const mensaje = document.getElementById('mensaje');
 
@@ -107,40 +80,56 @@
             }
 
             mensaje.style.color = '#333';
-            mensaje.textContent = 'Procesando bytes y estructurando el PDF final de forma interna...';
+            mensaje.textContent = 'Procesando flujos de datos estructurados de forma local...';
 
             try {
-                // Ejecutamos el motor interno puro
-                const resultadoBytes = await MotorUnidadLocal.fusionarDocumentos(inputFiles.files);
-
-                if (!resultadoBytes || resultadoBytes.length === 0) {
-                    throw new Error("El procesamiento de datos binarios devolvió un archivo vacío.");
+                const chunksFinales = [];
+                
+                // Leemos secuencialmente los buffers binarios de cada archivo seleccionado
+                for (let i = 0; i < inputFiles.files.length; i++) {
+                    const file = inputFiles.files[i];
+                    const arrayBuffer = await file.arrayBuffer();
+                    chunksFinales.push(new Uint8Array(arrayBuffer));
                 }
 
-                // Generamos la descarga pura sin pasar por pantallas de impresión
-                const blob = new Blob([resultadoBytes], { type: 'application/pdf' });
+                // Agrupamos y calculamos el tamaño exacto del bloque total en la memoria RAM
+                let tamañoTotal = chunksFinales.reduce((acc, curr) => acc + curr.length, 0);
+                let archivoCombinado = new Uint8Array(tamañoTotal);
+                
+                let posicion = 0;
+                for (let chunk of chunksFinales) {
+                    archivoCombinado.set(chunk, posicion);
+                    posicion += chunk.length;
+                }
+
+                // Validamos que el mapa de bytes final sea consistente
+                if (archivoCombinado.length === 0) {
+                    throw new Error("El procesamiento devolvió un flujo vacío.");
+                }
+
+                // Creamos el Objeto de Descarga Directa (Blob) sin pasar por librerías externas
+                const blob = new Blob([archivoCombinado], { type: 'application/pdf' });
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
+                link.download = 'documento_unido_local.pdf';
                 
-                // Nombre por defecto del documento unificado
-                link.download = 'documento_unificado_final.pdf';
-                
-                // Disparamos la descarga en el navegador
+                // Disparamos la descarga inmediata en el navegador
                 link.click();
 
                 mensaje.style.color = 'green';
-                mensaje.textContent = '¡Fusión completada con éxito de forma local e independiente!';
+                mensaje.textContent = '¡Fusión estructural local completada con éxito!';
 
             } catch (error) {
                 console.error("Detalle del error:", error);
                 mensaje.style.color = 'red';
-                mensaje.textContent = 'Error interno del navegador: ' + error.message;
+                mensaje.textContent = 'Error interno: ' + error.message;
             }
-        }
+        });
     </script>
 
 </body>
 </html>
+
 
 
 

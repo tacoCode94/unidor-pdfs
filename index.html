@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Unir PDFs - Versión Autónoma Total</title>
+    <title>Unir PDFs - Canal Estable cdnjs</title>
+    
+    <!-- CAMBIO DE RED CONFIABLE: Usamos el servidor global de cdnjs (Cloudflare) -->
+    <script src="https://cloudflare.com" crossorigin="anonymous"></script>
+
     <style>
         body { 
             font-family: Arial, sans-serif; 
@@ -61,29 +65,13 @@
         
         <input type="file" id="archivosPdf" accept="application/pdf" multiple>
         <br>
-        <button onclick="procesarUnionPdfs()">Combinar y Descargar PDF</button>
+        <button onclick="unirPdfsCdnjs()">Combinar y Descargar PDF</button>
         
         <div id="mensaje"></div>
     </div>
 
-    <!-- INYECTOR AUTÓNOMO DEL MOTOR REAL DE PDF-LIB (Inmune a bloqueos CORS de red) -->
     <script>
-        (function() {
-            // Versión compactada funcional y pura de la lógica de acoplamiento binario de pdf-lib
-            const codigoBase64 = "Y29uc3QgcGRmTGliID0gewogICAgUERGRG9jdW1lbnQ6IHsKICAgICAgICBjcmVhdGU6IGFzeW5jICgpID0+ICh7CiAgICAgICAgICAgIF9wYWdlczogW10sCiAgICAgICAgICAgIGNvcHlQYWdlczogYXN5bmMgKGRvYywgaW5kaWNlcykgPT4gZG9jLnBhZ2VzLmZpbHRlcigoXywgaSkgPT4gaW5kaWNlcy5pbmNsdWRlcyhpKSksCiAgICAgICAgICAgIGFkZFBhZ2UocGFnZSkgeyB0aGlzLl9wYWdlcy5wdXNoKHBhZ2UpOyB9LAogICAgICAgICAgICBzYXZlOiFhc3luYyAoKSA9PiB7CiAgICAgICAgICAgICAgICBsZXQgdG90YWxTaXplID0gdGhpcy5fcGFnZXMucmVkdWNlKChhY2MsIHApID0+IGFjYyArIHAuYnl0ZXMubGVuZ3RoLCAwKTsKICAgICAgICAgICAgICAgIGxldCBtZXJnZWRCeXRlcyA9IG5ldyBVaW50OEFycmF5KHRvdGFsU2l6ZSk7CiAgICAgICAgICAgICAgICBsZXQgb2Zmc2V0ID0gMDsKICAgICAgICAgICAgICAgIGZvciAobGV0IHAgb2YgdGhpcy5fcGFnZXMpIHsKICAgICAgICAgICAgICAgICAgICBtZXJnZWRCeXRlcy5zZXQocC5ieXRlcywgb2Zmc2V0KTsKICAgICAgICAgICAgICAgICAgICBvZmZzZXQgKz0gcC5ieXRlcy5sZW5ndGg7CiAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICByZXR1cm4gbWVyZ2VkQnl0ZXM7CiAgICAgICAgICAgIH0KICAgICAgICB9KSwKICAgICAgICBsb2FkOiBhc3luYyAoYnVmZmVyKSA9PiB7CiAgICAgICAgICAgIGNvbnN0IHVpbnQ4ID0gbmV3IFVpbnQ4QXJyYXkoYnVmZmVyKTsKICAgICAgICAgICAgY29uc3QgdGV4dCA9IG5ldyBUZXh0RGVjb2RlcigndXRmLTgnKS5kZWNvZGUodWludDQpOwogICAgICAgICAgICBjb25zdCByZWdleCA9IC9cL1R5cGVcL1BhZ2UoP1shXlNdKSovZzsKICAgICAgICAgICAgbGV0IHBhZ2VDb3VudCA9IDA7CiAgICAgICAgICAgIHdoaWxlIChyZWdleC5leGVjKHRleHQpICE9PSBudWxsKSBwYWdlQ291bnQrKzsKICAgICAgICAgICAgaWYgKHBhZ2VDb3VudCA9PT0gMCkgcGFnZUNvdW50ID0gMTsKICAgICAgICAgICAgbGV0IHBncyA9IEFycmF5LmZyb20oeyBsZW5ndGg6IHBhZ2VDb3VudCB9LCAoKSA9PiAoeyBieXRlczogdWludDggfSkpOwogICAgICAgICAgICByZXR1cm4gewogICAgICAgICAgICAgICAgcGFnZXM6IHBncywKICAgICAgICAgICAgICAgIGdldFBhZ2VDb3VudDogKCkgPT4gcGFnZUNvdW50CiAgICAgICAgICAgIH07CiAgICAgICAgfQogICAgfQp9Owp3aW5kb3cuUERGTGliID0gcGRmTGliOyB3aW5kb3wucGRmTGliID0gcGRmTGliOw==";
-            try {
-                const decodificado = atob(codigoBase64);
-                const elementoScript = document.createElement('script');
-                elementoScript.text = decodificado;
-                document.head.appendChild(elementoScript);
-            } catch(error) {
-                console.error("Error crítico al inicializar el contenedor binario autónomo.");
-            }
-        })();
-    </script>
-
-    <script>
-        async function procesarUnionPdfs() {
+        async function unirPdfsCdnjs() {
             const inputFiles = document.getElementById('archivosPdf');
             const mensaje = document.getElementById('mensaje');
 
@@ -94,53 +82,53 @@
             }
 
             mensaje.style.color = '#333';
-            mensaje.textContent = 'Analizando y reconstruyendo metadatos binarios en local...';
+            mensaje.textContent = 'Leyendo estructuras y acoplando páginas...';
 
-            // Buscamos el motor inyectado de forma interna e independiente
-            const motorActivo = window.PDFLib || window.pdfLib;
+            // Captura el motor en el entorno global inyectado por Cloudflare cdnjs
+            const motorPDF = window.PDFLib || window.pdfLib;
 
-            if (!motorActivo) {
+            if (!motorPDF) {
                 mensaje.style.color = 'red';
-                mensaje.textContent = 'Fallo de contingencia del sistema. Tu navegador no soporta decodificación Base64.';
+                mensaje.textContent = 'Error crítico: La nueva red cdnjs también está bloqueada. Por favor recarga o prueba desde otro navegador o red de datos.';
                 return;
             }
 
             try {
-                const { PDFDocument } = motorActivo;
-                const pdfFinal = await PDFDocument.create();
+                const { PDFDocument } = motorPDF;
+                // Inicializamos el documento de destino real vacío
+                const pdfDocMerged = await PDFDocument.create();
 
-                // Recorremos los archivos cargados mapeando sus contenidos binarios estructurales reales
+                // Procesamos secuencialmente el contenido binario de cada archivo
                 for (let i = 0; i < inputFiles.files.length; i++) {
                     const file = inputFiles.files[i];
                     const arrayBuffer = await file.arrayBuffer();
                     
-                    // Carga segura del mapa de bytes
-                    const pdfIndividual = await PDFDocument.load(arrayBuffer);
-                    const totalPaginas = pdfIndividual.getPageCount();
-                    const indicesPaginas = Array.from({ length: totalPaginas }, (_, index) => index);
+                    // Carga completa e indexación de páginas
+                    const pdfDoc = await PDFDocument.load(arrayBuffer);
+                    const count = pdfDoc.getPageCount();
+                    const pageIndices = Array.from({ length: count }, (_, index) => index);
 
-                    // Clonamos las páginas sin romper los streams internos de fuentes ni gráficos
-                    const paginasCopiadas = await pdfFinal.copyPages(pdfIndividual, indicesPaginas);
-                    paginasCopiadas.forEach((pagina) => pdfFinal.addPage(pagina));
+                    // Copiado físico real de textos, fuentes y gráficos vectoriales
+                    const pages = await pdfDocMerged.copyPages(pdfDoc, pageIndices);
+                    pages.forEach((page) => pdfDocMerged.addPage(page));
                 }
 
-                // Generamos los bytes del PDF reconstruído
-                const bytesFinales = await pdfFinal.save();
+                // Compilamos los datos binarios finales reconstruidos
+                const mergedPdfBytes = await pdfDocMerged.save();
                 
-                // Forzamos la descarga directa del Blob estructurado
-                const blob = new Blob([bytesFinales], { type: 'application/pdf' });
+                // Forzamos la descarga del Blob consolidado final
+                const blob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
-                link.download = 'documento_unido_completo.pdf';
+                link.download = 'documento_unido.pdf';
                 link.click();
 
                 mensaje.style.color = 'green';
-                mensaje.textContent = '¡Fusión completada! Todos tus PDFs se unieron con su contenido real intacto.';
-
+                mensaje.textContent = '¡Fusión completada! El PDF con todo su contenido real se ha descargado.';
             } catch (error) {
-                console.error(error);
+                console.error("Detalle técnico del error:", error);
                 mensaje.style.color = 'red';
-                mensaje.textContent = 'Error durante la compilación binaria: ' + error.message;
+                mensaje.textContent = 'Error al combinar: ' + error.message;
             }
         }
     </script>

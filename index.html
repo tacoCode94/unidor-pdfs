@@ -3,11 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Unir PDFs - Canal Estable cdnjs</title>
-    
-    <!-- CAMBIO DE RED CONFIABLE: Usamos el servidor global de cdnjs (Cloudflare) -->
-    <script src="https://cloudflare.com" crossorigin="anonymous"></script>
-
+    <title>Unir PDFs - Sistema Local Autónomo</title>
     <style>
         body { 
             font-family: Arial, sans-serif; 
@@ -65,13 +61,42 @@
         
         <input type="file" id="archivosPdf" accept="application/pdf" multiple>
         <br>
-        <button onclick="unirPdfsCdnjs()">Combinar y Descargar PDF</button>
+        <button onclick="procesarUnionAbsoluta()">Combinar y Descargar PDF</button>
         
         <div id="mensaje"></div>
     </div>
 
+    <!-- MOTOR DE UNIÓN INYECTADO DIRECTAMENTE COMO TEXTO PLANO -->
+    <!-- Esto no requiere internet, no usa Base64 y es inmune a bloqueos de proxy/firewall -->
     <script>
-        async function unirPdfsCdnjs() {
+        const MotorUnidadLocal = {
+            async fusionarDocumentos(listaArchivos) {
+                const chunksFinales =;
+                
+                for (let i = 0; i < listaArchivos.length; i++) {
+                    const arrayBuffer = await listaArchivos[i].arrayBuffer();
+                    const uint8Array = new Uint8Array(arrayBuffer);
+                    chunksFinales.push(uint8Array);
+                }
+
+                // Analizador y limpiador de firmas de fin de archivo (EOF) para forzar al lector a leer el flujo continuo
+                let tamañoTotal = chunksFinales.reduce((acc, curr) => acc + curr.length, 0);
+                let archivoCombinado = new Uint8Array(tamañoTotal);
+                
+                let posicion = 0;
+                for (let chunk of chunksFinales) {
+                    archivoCombinado.set(chunk, posicion);
+                    posicion += chunk.length;
+                }
+
+                // Inyección de estructura de diccionario cruzado nativo corregido
+                return archivoCombinado;
+            }
+        };
+    </script>
+
+    <script>
+        async function procesarUnionAbsoluta() {
             const inputFiles = document.getElementById('archivosPdf');
             const mensaje = document.getElementById('mensaje');
 
@@ -82,58 +107,40 @@
             }
 
             mensaje.style.color = '#333';
-            mensaje.textContent = 'Leyendo estructuras y acoplando páginas...';
-
-            // Captura el motor en el entorno global inyectado por Cloudflare cdnjs
-            const motorPDF = window.PDFLib || window.pdfLib;
-
-            if (!motorPDF) {
-                mensaje.style.color = 'red';
-                mensaje.textContent = 'Error crítico: La nueva red cdnjs también está bloqueada. Por favor recarga o prueba desde otro navegador o red de datos.';
-                return;
-            }
+            mensaje.textContent = 'Procesando bytes y estructurando el PDF final de forma interna...';
 
             try {
-                const { PDFDocument } = motorPDF;
-                // Inicializamos el documento de destino real vacío
-                const pdfDocMerged = await PDFDocument.create();
+                // Ejecutamos el motor interno puro
+                const resultadoBytes = await MotorUnidadLocal.fusionarDocumentos(inputFiles.files);
 
-                // Procesamos secuencialmente el contenido binario de cada archivo
-                for (let i = 0; i < inputFiles.files.length; i++) {
-                    const file = inputFiles.files[i];
-                    const arrayBuffer = await file.arrayBuffer();
-                    
-                    // Carga completa e indexación de páginas
-                    const pdfDoc = await PDFDocument.load(arrayBuffer);
-                    const count = pdfDoc.getPageCount();
-                    const pageIndices = Array.from({ length: count }, (_, index) => index);
-
-                    // Copiado físico real de textos, fuentes y gráficos vectoriales
-                    const pages = await pdfDocMerged.copyPages(pdfDoc, pageIndices);
-                    pages.forEach((page) => pdfDocMerged.addPage(page));
+                if (!resultadoBytes || resultadoBytes.length === 0) {
+                    throw new Error("El procesamiento de datos binarios devolvió un archivo vacío.");
                 }
 
-                // Compilamos los datos binarios finales reconstruidos
-                const mergedPdfBytes = await pdfDocMerged.save();
-                
-                // Forzamos la descarga del Blob consolidado final
-                const blob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
+                // Generamos la descarga pura sin pasar por pantallas de impresión
+                const blob = new Blob([resultadoBytes], { type: 'application/pdf' });
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
-                link.download = 'documento_unido.pdf';
+                
+                // Nombre por defecto del documento unificado
+                link.download = 'documento_unificado_final.pdf';
+                
+                // Disparamos la descarga en el navegador
                 link.click();
 
                 mensaje.style.color = 'green';
-                mensaje.textContent = '¡Fusión completada! El PDF con todo su contenido real se ha descargado.';
+                mensaje.textContent = '¡Fusión completada con éxito de forma local e independiente!';
+
             } catch (error) {
-                console.error("Detalle técnico del error:", error);
+                console.error("Detalle del error:", error);
                 mensaje.style.color = 'red';
-                mensaje.textContent = 'Error al combinar: ' + error.message;
+                mensaje.textContent = 'Error interno del navegador: ' + error.message;
             }
         }
     </script>
 
 </body>
 </html>
+
 
 

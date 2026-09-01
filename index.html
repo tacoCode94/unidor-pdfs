@@ -3,11 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Unir PDFs Fácilmente - Servidor Estable</title>
-    
-    <!-- CDN Oficial y estable de la librería -->
-    <script src="https://cloudflare.com"></script>
-
+    <title>Unir PDFs Fácilmente - Versión Producción</title>
     <style>
         body { 
             font-family: Arial, sans-serif; 
@@ -65,13 +61,18 @@
         
         <input type="file" id="archivosPdf" accept="application/pdf" multiple>
         <br>
-        <button onclick="unirPdfsServidor()">Combinar y Descargar PDF</button>
+        <button id="btnCombinar">Combinar y Descargar PDF</button>
         
         <div id="mensaje"></div>
     </div>
 
-    <script>
-        async function unirPdfsServidor() {
+    <!-- Usamos un script tipo módulo nativo para forzar la importación aislada inmune a bloqueos -->
+    <script type="module">
+        // Importamos directamente el objeto PDFDocument desde un repositorio de módulos oficial y seguro
+        import { PDFDocument } from 'https://jsdelivr.net';
+
+        // Escuchamos el clic del botón de forma interna en JavaScript
+        document.getElementById('btnCombinar').addEventListener('click', async () => {
             const inputFiles = document.getElementById('archivosPdf');
             const mensaje = document.getElementById('mensaje');
 
@@ -82,19 +83,10 @@
             }
 
             mensaje.style.color = '#333';
-            mensaje.textContent = 'Procesando y uniendo archivos...';
-
-            // DETECCIÓN TOTALMENTE FLEXIBLE: Buscamos el motor en todas sus variaciones posibles
-            const motorPDF = window.PDFLib || window.pdfLib || (typeof PDFLib !== 'undefined' ? PDFLib : null) || (typeof pdfLib !== 'undefined' ? pdfLib : null);
-
-            if (!motorPDF) {
-                mensaje.style.color = 'red';
-                mensaje.textContent = 'Error crítico: No se pudo enlazar la librería PDF-lib en este navegador. Intenta recargar la página.';
-                return;
-            }
+            mensaje.textContent = 'Procesando y uniendo archivos en la nube...';
 
             try {
-                const { PDFDocument } = motorPDF;
+                // Creamos el documento combinado usando el módulo importado de forma segura
                 const pdfDocMerged = await PDFDocument.create();
 
                 for (let i = 0; i < inputFiles.files.length; i++) {
@@ -124,17 +116,18 @@
                 link.click();
 
                 mensaje.style.color = 'green';
-                mensaje.textContent = '¡PDFs unidos y descargados con éxito!';
+                mensaje.textContent = '¡PDFs combinados y descargados con éxito!';
             } catch (error) {
                 console.error("Detalle del error:", error);
                 mensaje.style.color = 'red';
                 mensaje.textContent = 'Error: ' + error.message;
             }
-        }
+        });
     </script>
 
 </body>
 </html>
+
 
 
 

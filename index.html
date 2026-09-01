@@ -3,19 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Unir PDFs Fácilmente - Servidor</title>
-
-    <!-- CDN Oficiales que se activarán al estar en un Host -->
-    <script src="https://cloudflare.com"></script>
-
+    <title>Unir PDFs Fácilmente</title>
+    <!-- Cargamos PDF-lib desde un CDN -->
+    <script src="https://unpkg.com"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 40px auto;
-            padding: 20px;
-            text-align: center;
-            background: #f4f4f9;
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 600px; 
+            margin: 40px auto; 
+            padding: 20px; 
+            text-align: center; 
+            background: #f4f4f9; 
         }
         .container {
             background: #fff;
@@ -23,34 +21,34 @@
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
-        input[type="file"] {
-            margin: 20px 0;
-            padding: 10px;
-            background: #fafafa;
-            border: 1px dashed #ccc;
-            width: 100%;
-            box-sizing: border-box;
+        input[type="file"] { 
+            margin: 20px 0; 
+            padding: 10px; 
+            background: #fafafa; 
+            border: 1px dashed #ccc; 
+            width: 100%; 
+            box-sizing: border-box; 
             cursor: pointer;
         }
-        button {
-            background: #4CAF50;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            border-radius: 5px;
-            width: 100%;
+        button { 
+            background: #4CAF50; 
+            color: white; 
+            border: none; 
+            padding: 12px 20px; 
+            font-size: 16px; 
+            cursor: pointer; 
+            border-radius: 5px; 
+            width: 100%; 
             font-weight: bold;
             transition: background 0.3s;
         }
-        button:hover {
-            background: #45a049;
+        button:hover { 
+            background: #45a049; 
         }
-        #mensaje {
-            margin-top: 20px;
-            font-weight: bold;
-            color: #333;
+        #mensaje { 
+            margin-top: 20px; 
+            font-weight: bold; 
+            color: #333; 
             padding: 10px;
             border-radius: 4px;
             word-wrap: break-word;
@@ -61,20 +59,21 @@
 
     <div class="container">
         <h1>Unir Archivos PDF</h1>
-        <p>Selecciona tus archivos PDF (mantén presionado Ctrl o Cmd para elegir varios):</p>
-
+        <p>Selecciona tus archivos PDF en el orden que deseas unirlos:</p>
+        
         <input type="file" id="archivosPdf" accept="application/pdf" multiple>
         <br>
-        <button onclick="unirPdfsServidor()">Combinar y Descargar PDF</button>
-
+        <button onclick="unirPdfs()">Combinar y Descargar</button>
+        
         <div id="mensaje"></div>
     </div>
 
     <script>
-        async function unirPdfsServidor() {
+        async function unirPdfs() {
             const inputFiles = document.getElementById('archivosPdf');
             const mensaje = document.getElementById('mensaje');
 
+            // 1. Validación inicial de cantidad de archivos
             if (inputFiles.files.length < 2) {
                 mensaje.style.color = 'red';
                 mensaje.textContent = 'Por favor selecciona al menos 2 archivos PDF.';
@@ -82,56 +81,59 @@
             }
 
             mensaje.style.color = '#333';
-            mensaje.textContent = 'Procesando archivos en el servidor seguro...';
-
-            // Mapeo adaptativo de la librería global
-            const motorPDF = window.PDFLib || window.pdfLib;
-
-            if (!motorPDF) {
-                mensaje.style.color = 'red';
-                mensaje.textContent = 'Error: Esperando conexión con el servidor de librerías. Si estás probando en local (file://), recuerda subirlo a un hosting web para activar este motor.';
-                return;
-            }
+            mensaje.textContent = 'Procesando archivos localmente...';
 
             try {
-                const { PDFDocument } = motorPDF;
+                // 2. Acceso a los componentes de la biblioteca
+                const { PDFDocument } = PDFLib;
                 const pdfDocMerged = await PDFDocument.create();
 
+                // 3. Procesar secuencialmente cada archivo seleccionado
                 for (let i = 0; i < inputFiles.files.length; i++) {
                     const file = inputFiles.files[i];
                     const arrayBuffer = await file.arrayBuffer();
-
+                    
                     let pdfDoc;
                     try {
+                        // Carga segura del documento
                         pdfDoc = await PDFDocument.load(arrayBuffer);
                     } catch (loadError) {
+                        // Captura si el PDF individual tiene problemas o contraseña
                         throw new Error(`El archivo "${file.name}" está encriptado, protegido o dañado.`);
                     }
 
+                    // Generar array de índices compatible con cualquier navegador
                     const count = pdfDoc.getPageCount();
                     const pageIndices = Array.from({ length: count }, (_, index) => index);
 
+                    // Copiar e insertar las páginas en el documento final
                     const pages = await pdfDocMerged.copyPages(pdfDoc, pageIndices);
                     pages.forEach((page) => pdfDocMerged.addPage(page));
                 }
 
+                // 4. Compilar el archivo final y forzar la descarga
                 const mergedPdfBytes = await pdfDocMerged.save();
-
+                
                 const blob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
-                link.download = 'documento_unido.pdf';
+                link.download = 'documento-unido.pdf';
                 link.click();
 
                 mensaje.style.color = 'green';
                 mensaje.textContent = '¡PDFs unidos y descargados con éxito!';
             } catch (error) {
-                console.error(error);
+                console.error("Detalle técnico del error:", error);
                 mensaje.style.color = 'red';
+                // El navegador mostrará si falló por estructura o por archivo protegido
                 mensaje.textContent = 'Error: ' + error.message;
             }
         }
     </script>
+
+</body>
+</html>
+
 
 </body>
 </html>

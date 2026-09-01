@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Unir PDFs Fácilmente - Versión Autónoma Definitiva</title>
+    <title>Unir PDFs - Versión Estable GitHub</title>
     
+    <!-- CARGA DEFINITIVA: Servidor jsDelivr inmune a bloqueos CORS de producción en GitHub -->
+    <script src="https://jsdelivr.net" crossorigin="anonymous"></script>
+
     <style>
         body { 
             font-family: Arial, sans-serif; 
@@ -62,29 +65,13 @@
         
         <input type="file" id="archivosPdf" accept="application/pdf" multiple>
         <br>
-        <button onclick="unirPdfsAbsoluto()">Combinar y Descargar PDF</button>
+        <button onclick="unirPdfsGithub()">Combinar y Descargar PDF</button>
         
         <div id="mensaje"></div>
     </div>
 
-    <!-- INYECTAMOS EL MOTOR FUSIONADOR EN BASE64 - INMUNE A BLOQUEOS DE CORS O FILTROS -->
     <script>
-        (function() {
-            // Este bloque recrea el motor pdf-lib de forma local usando un stream binario puro
-            const b64Data = "dmFyIHBkZkxpYidwZGZMaWInfHMod2luZG93LnBkZkxpYj17fSk7cGRmTGliLlBERkRvY3VtZW50PXtjcmVhdGU6YXN5bmMoKT0+e3JldHVybntfcGFnZXM6W10sY29weVBhZ2VzOmFzeW5jKGQsaSk9PmQucGFnZXMuZmlsdGVyKChwLHgpPT5pLmluY2x1ZGVzKHgpKSxhZGRQYWdlKHApe3RoaXMuX3BhZ2VzLnB1c2gocCl9LHNhdmU6YXN5bmMoKT0+e3ZhciB0PW5ldyBVaW50OEFycmF5KHRoaXMuX3BhZ2VzLnJlZHVjZSgoYSxwKT0+YStwLmJ5dGVzLmxlbmd0aCwwKSksbz0wO2Zvcih2YXIgcCBvZiB0aGlzLl9wYWdlcyl7dC5zZXQocC5ieXRlcyxvKTtvKz1wLmJ5dGVzLmxlbmd0aH1yZXR1cm4gdH19fSdsb2FkOmFzeW5jKGEpPT57dmFyIHU9bmV3IFVpbnQ4QXJyYXkoYSkscz1bXSxnZXRQYWdlQ291bnQ9KCk9Pnt2YXIgbD0wLG09bmV3IFRleHREZWNvZGVyKCd1dGYtOCcpLmRlY29kZSh1KSxyPS9cL1R5cGVcL1BhZ2UoYW5kbm90X1tTXT0pKi9nLHg7d2hpbGUoKHg9ci5leGVjKG0pKSE9PW51bGwpbCsrO3JldHVybiBsPT0wPzE6bH0sY250PWdldFBhZ2VDb3VudCgpO2Zvcih2YXIgaT0wO2k8Y250O2krKylzLnB1c2goe2J5dGVzOnV9KTtyZXR1cm57cGFnZXM6cyxnZXRQYWdlQ291bnQ6KCk9PmNudH19fTs=";
-            try {
-                const raw = atob(b64Data);
-                const script = document.createElement('script');
-                script.text = raw;
-                document.head.appendChild(script);
-            } catch(e) {
-                console.error("Error inicializando motor adaptativo");
-            }
-        })();
-    </script>
-
-    <script>
-        async function unirPdfsAbsoluto() {
+        async function unirPdfsGithub() {
             const inputFiles = document.getElementById('archivosPdf');
             const mensaje = document.getElementById('mensaje');
 
@@ -95,86 +82,62 @@
             }
 
             mensaje.style.color = '#333';
-            mensaje.textContent = 'Procesando y reconstruyendo estructuras binarias...';
+            mensaje.textContent = 'Iniciando fusión de páginas reales...';
 
-            // Buscamos el motor local inyectado
-            const motorPDF = window.pdfLib || window.PDFLib;
+            // Captura segura e inequívoca del motor global inyectado por jsDelivr
+            const motorPDF = window.PDFLib || window.pdfLib;
 
-            if (!motorPDF || !motorPDF.PDFDocument) {
-                // PLAN B: Caída segura a reconstrucción matemática si el navegador es extremadamente antiguo
-                fusionarPorEstructuraBytes(inputFiles.files, mensaje);
+            if (!motorPDF) {
+                mensaje.style.color = 'red';
+                mensaje.textContent = 'Error: No se pudo enlazar el motor PDF-lib en la red actual. Revisa tu conexión.';
                 return;
             }
 
             try {
                 const { PDFDocument } = motorPDF;
+                // Creamos el contenedor del PDF final vacío
                 const pdfDocMerged = await PDFDocument.create();
 
+                // Procesamos cada uno de los archivos cargados
                 for (let i = 0; i < inputFiles.files.length; i++) {
                     const file = inputFiles.files[i];
                     const arrayBuffer = await file.arrayBuffer();
                     
-                    let pdfDoc = await PDFDocument.load(arrayBuffer);
+                    // Cargamos el PDF individual de manera binaria completa
+                    const pdfDoc = await PDFDocument.load(arrayBuffer);
+                    
+                    // Extraemos los índices exactos de sus páginas reales
                     const count = pdfDoc.getPageCount();
                     const pageIndices = Array.from({ length: count }, (_, index) => index);
 
+                    // Copiamos las páginas con sus contenidos completos (gráficos, fuentes y textos)
                     const pages = await pdfDocMerged.copyPages(pdfDoc, pageIndices);
+                    
+                    // Añadimos cada página secuencialmente al documento final
                     pages.forEach((page) => pdfDocMerged.addPage(page));
                 }
 
+                // Compilamos la estructura final del nuevo PDF unificado
                 const mergedPdfBytes = await pdfDocMerged.save();
-                descargarBlob(mergedPdfBytes, 'documento_unido.pdf');
                 
+                // Forzamos la descarga del archivo binario puro procesado
+                const blob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'documento_unido.pdf';
+                link.click();
+
                 mensaje.style.color = 'green';
-                mensaje.textContent = '¡PDFs fusionados y descargados con éxito!';
+                mensaje.textContent = '¡Todos los archivos se han unificado y descargado con éxito!';
 
             } catch (error) {
-                console.warn("Redireccionando a motor de contingencia...");
-                fusionarPorEstructuraBytes(inputFiles.files, mensaje);
+                console.error("Detalle técnico del error:", error);
+                mensaje.style.color = 'red';
+                mensaje.textContent = 'Error durante la combinación: ' + error.message;
             }
-        }
-
-        // Fusión Avanzada por Inyección de Objetos Cruzados (Garantiza que NO borre contenido)
-        async function fusionarPorEstructuraBytes(archivos, elementoMensaje) {
-            try {
-                let chunks = [];
-                for (let i = 0; i < archivos.length; i++) {
-                    const buffer = await archivos[i].arrayBuffer();
-                    chunks.push(new Uint8Array(buffer));
-                }
-
-                let totalLength = chunks.reduce((acc, val) => acc + val.length, 0);
-                let mergedArray = new Uint8Array(totalLength);
-                
-                let offset = 0;
-                for (let chunk of chunks) {
-                    mergedArray.set(chunk, offset);
-                    offset += chunk.length;
-                }
-
-                descargarBlob(mergedArray, 'documento_unido_local.pdf');
-                elementoMensaje.style.color = 'green';
-                elementoMensaje.textContent = '¡Fusión por estructura completada con éxito!';
-            } catch (err) {
-                elementoMensaje.style.color = 'red';
-                elementoMensaje.textContent = 'Error: Este navegador impide leer flujos locales.';
-            }
-        }
-
-        function descargarBlob(bytes, nombre) {
-            const blob = new Blob([bytes], { type: 'application/pdf' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = nombre;
-            link.click();
         }
     </script>
 
 </body>
 </html>
 
-
-
-
-</body>
-</html>
